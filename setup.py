@@ -34,11 +34,13 @@ setup(
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
-    packages=['qrcode', 'pymaging', 'pymaging-png'],
+    packages=['qrcode', 'pymaging', 'pymaging_png', 'qrcode.image'],
     package_dir={   '': 'src',
                     'qrcode': 'lib/python-qrcode/qrcode',
+                    'qrcode.image': 'lib/python-qrcode/qrcode/image',
                     'pymaging': 'lib/pymaging/pymaging',
-                    'pymaging-png': 'lib/pymaging-png/pymaging_png'
+                    'pymaging_png': 'lib/pymaging-png/pymaging_png'
+                    #'pymaging_png.png': 'lib/pymaging-png/pymaging_png/'
                     },
     py_modules=[]
 )
