@@ -2,15 +2,16 @@ import objc
 import Cocoa
 import qrcode
 import qrcode.image.pure
+import random
 import StringIO
 
-from Foundation import *
 from AppKit import *
-
+from Foundation import *
+from multiprocessing import Process
 from PyObjCTools import AppHelper
 
 class QrCodeMenu(NSMenu):
-    def draw(self, delegate):
+    def draw(self, delegate):        
         # About
         aboutItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('About QR Code Menu', 'about:', '')
         self.addItem_(aboutItem)
@@ -35,21 +36,26 @@ class QrCodeMenu(NSMenu):
         quitItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Quit QR Code Menu', 'terminate:', '')
         self.addItem_(quitItem)
 
+        # track menu activation
         nc = NSNotificationCenter.defaultCenter()
         nc.addObserver_selector_name_object_(delegate, 'menuActivated:', NSMenuDidBeginTrackingNotification, self)
 
-    def setImage(self, image):
+        self.chart = NSImage.alloc().initByReferencingFile_('images/chart_150.png')
+        self.qrCodeItem.setImage_(self.chart)
+
+    def setQrImage(self, image):
         self.qrCodeItem.setImage_(image)
+        
 
 class QrCodeMaker():
-    def getForText(self, text):
-
+    def imageFromText(self, text):
         # create the image
         qr = qrcode.QRCode(image_factory=qrcode.image.pure.PymagingImage, 
-            version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, 
-            box_size=3, 
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L, 
+            box_size=4, 
             border=0)
-        qr.add_data('NSBitmapImageRep 0x7faaeba5d180 Size={276, 276} ColorSpace=(not yet loaded) BPS=8 BPP=(not yet loaded) Pixels=276x276 Alpha=YES Planar=NO Format=(not yet loaded) CurrentBacking=nil (faulting) CGImageSource=0x7faaeb')
+        qr.add_data(text)
         qr.make(fit=True)
         img = qr.make_image()
 
@@ -68,12 +74,30 @@ class QrCodeMenuApp(NSObject):
 
     @objc.IBAction
     def menuActivated_(self, notification):
-        maker = QrCodeMaker()
-        i = maker.getForText("testing this thing")
+        # self.performSelectorInBackground_withObject_('updateImageInMenu:', None)
+        pass
 
-        self.menu.setImage(i)
+    @objc.IBAction
+    def watchPasteboard_(self, notification):
+        newPbstring = self.pb.stringForType_(NSStringPboardType)
+        if newPbstring != self.pbstring:
+            self.pbstring = newPbstring
+
+            #TODO: need to figure out unicode
+            #TODO: limit the size of the clipboard
+
+            maker = QrCodeMaker()
+            i = maker.imageFromText(repr(self.pbstring.encode("utf-8")))
+            self.menu.setQrImage(i)
+            # print u"New pastboard string: %s".encode("utf-8") % repr(self.pbstring)
+
+        pass
 
     def applicationDidFinishLaunching_(self, notification):
+        # init clipboard
+        self.pb = NSPasteboard.generalPasteboard()
+        self.pbstring = ""
+
     	self.icon = NSImage.alloc().initByReferencingFile_('images/status_bar_icon.png')
         self.chart = NSImage.alloc().initByReferencingFile_('images/chart_150.png')
     	#self.icon.lockFocus()
@@ -84,6 +108,7 @@ class QrCodeMenuApp(NSObject):
 
         # get a statusbar item
         statusbar = NSStatusBar.systemStatusBar()
+
         # Create the statusbar item
     	self.statusItem = statusbar.statusItemWithLength_(NSVariableStatusItemLength)
     	self.statusItem.setImage_(self.icon)
@@ -91,6 +116,15 @@ class QrCodeMenuApp(NSObject):
     	self.statusItem.setHighlightMode_(True)
 
         self.statusItem.setMenu_(self.menu)
+
+        
+        timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+            1,
+            self,
+            'watchPasteboard:',
+            None,
+            True)
+        NSRunLoop.currentRunLoop().addTimer_forMode_(timer, NSRunLoopCommonModes)
 
     def applicationWillTerminate_(self, aNotification):
         pass
