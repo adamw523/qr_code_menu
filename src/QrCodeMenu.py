@@ -23,7 +23,7 @@ class QrCodeMenu(NSMenu):
         self.addItem_(self.qrCodeItem)
 
         # Customize
-        customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Change...', 'change:', '')
+        customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'change:', '')
         self.addItem_(customizeItem)
 
         # Save Image
@@ -67,10 +67,82 @@ class QrCodeMaker():
 
         return image
 
+
+# Handle window events
+class WindowDelegate(NSObject):
+    def windowWillClose_(self, notification):
+        print "Bye, now"
+        app.terminate_(self)
+
+# Handle events from our button
+class ButtonHandler(NSObject):
+    # rest could contain event info, but is empty here
+    def doSomething(self, notification):
+        global button
+        print 'Button Pressed!'
+        # Toggle button's border on and off
+        button.setBordered_(not button.isBordered())
+
+
 class QrCodeMenuApp(NSObject):
     @objc.IBAction
     def about_(self, sender):
         print "About stuff", sender
+
+        graphicsRect = NSMakeRect(100.0, 350.0, 450.0, 400.0)
+        #Make window
+        myWindow = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            graphicsRect,
+            NSTitledWindowMask |
+            NSClosableWindowMask |
+            NSResizableWindowMask,
+            NSBackingStoreBuffered, False)
+
+        # Set handler for window
+        myWindow.setTitle_("PyObjC Example")
+        myDelegate = WindowDelegate.alloc( ).init( )
+        myWindow.setDelegate_(myDelegate)
+
+        # Create button, and add to window
+        button = NSButton.alloc().init()
+        myWindow.contentView().addSubview_(button)
+        button.setFrame_(NSMakeRect(10.0, 35.0, 45.0, 40.0))
+
+        # Set handler for button; note that the function is called by string name
+        buttonHandler = ButtonHandler.alloc().init()
+        button.setTarget_(buttonHandler)
+        button.setAction_("doSomething")
+
+        # Zoom button
+        myWindow.standardWindowButton_(NSWindowZoomButton).setHidden_(True)
+        # Display window
+        myWindow.display()
+        # window.(makeKeyAndOrderFront(myWindow))
+        myWindow.makeKeyAndOrderFront_(myWindow)
+        NSApp.activateIgnoringOtherApps_(True)
+        #myWindow.orderFrontRegardless()
+
+        print 'myWindow', myWindow
+        self.window = myWindow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @objc.IBAction
     def menuActivated_(self, notification):
