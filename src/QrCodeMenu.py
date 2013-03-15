@@ -20,7 +20,9 @@ class QrCodeMenu(NSMenu):
 
         # QR Code Image
         self.qrCodeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('', '', '')
+        self.setLoading()
         self.addItem_(self.qrCodeItem)
+        self.addItem_(NSMenuItem.separatorItem())  
 
         # Customize
         customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'change:', '')
@@ -40,11 +42,12 @@ class QrCodeMenu(NSMenu):
         nc = NSNotificationCenter.defaultCenter()
         nc.addObserver_selector_name_object_(delegate, 'menuActivated:', NSMenuDidBeginTrackingNotification, self)
 
-        self.chart = NSImage.alloc().initByReferencingFile_('images/chart_150.png')
-        self.qrCodeItem.setImage_(self.chart)
-
     def setQrImage(self, image):
         self.qrCodeItem.setImage_(image)
+        self.qrCodeItem.setTitle_("")
+
+    def setLoading(self):
+        self.qrCodeItem.setTitle_("Loading...")
         
 
 class QrCodeMaker():
@@ -52,8 +55,8 @@ class QrCodeMaker():
         # create the image
         qr = qrcode.QRCode(image_factory=qrcode.image.pure.PymagingImage, 
             version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L, 
-            box_size=4, 
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=4,
             border=0)
         qr.add_data(text)
         qr.make(fit=True)
@@ -89,41 +92,43 @@ class QrCodeMenuApp(NSObject):
     def about_(self, sender):
         print "About stuff", sender
 
-        graphicsRect = NSMakeRect(100.0, 350.0, 450.0, 400.0)
+        graphicsRect = NSMakeRect(300.0, 550.0, 300.0, 457.0)
         #Make window
-        myWindow = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+        self.aboutWindow = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
             graphicsRect,
             NSTitledWindowMask |
             NSClosableWindowMask |
             NSResizableWindowMask,
             NSBackingStoreBuffered, False)
+        
+        self.aboutWindow.center()
 
         # Set handler for window
-        myWindow.setTitle_("PyObjC Example")
-        myDelegate = WindowDelegate.alloc( ).init( )
-        myWindow.setDelegate_(myDelegate)
+        self.aboutWindow.setTitle_("About QR Code Menu")
+        #myDelegate = WindowDelegate.alloc( ).init( )
+        #myWindow.setDelegate_(myDelegate)
 
         # Create button, and add to window
-        button = NSButton.alloc().init()
-        myWindow.contentView().addSubview_(button)
-        button.setFrame_(NSMakeRect(10.0, 35.0, 45.0, 40.0))
+        #button = NSButton.alloc().init()
+        #myWindow.contentView().addSubview_(button)
+        #button.setFrame_(NSMakeRect(10.0, 35.0, 45.0, 40.0))
 
         # Set handler for button; note that the function is called by string name
-        buttonHandler = ButtonHandler.alloc().init()
-        button.setTarget_(buttonHandler)
-        button.setAction_("doSomething")
+        #buttonHandler = ButtonHandler.alloc().init()
+        #button.setTarget_(buttonHandler)
+        #button.setAction_("doSomething")
 
         # Zoom button
-        myWindow.standardWindowButton_(NSWindowZoomButton).setHidden_(True)
+        self.aboutWindow.standardWindowButton_(NSWindowZoomButton).setHidden_(True)
         # Display window
-        myWindow.display()
+        self.aboutWindow.display()
         # window.(makeKeyAndOrderFront(myWindow))
-        myWindow.makeKeyAndOrderFront_(myWindow)
+        self.aboutWindow.makeKeyAndOrderFront_(self.aboutWindow)
         NSApp.activateIgnoringOtherApps_(True)
         #myWindow.orderFrontRegardless()
 
-        print 'myWindow', myWindow
-        self.window = myWindow
+
+
 
 
 
@@ -154,6 +159,7 @@ class QrCodeMenuApp(NSObject):
         newPbstring = self.pb.stringForType_(NSStringPboardType)
         if newPbstring != self.pbstring:
             self.pbstring = newPbstring
+            self.menu.setLoading()
 
             #TODO: need to figure out unicode
             #TODO: limit the size of the clipboard
