@@ -17,11 +17,12 @@ def find_data_files(*patterns):
             data_files.setdefault(os.path.dirname(fn), []).append(fn)
     return data_files.items()
 
-DATA_FILES = find_data_files('images/*')
+DATA_FILES = find_data_files('images/*', 'nibs/*')
 PACKAGES = ['qrcode', 'pymaging', 'pymaging-png']
 MODULES = []#['python-qrcode']#['pymaging']
 APP = ['src/QrCodeMenu.py']
-DATA_FILES = DATA_FILES
+
+print 'DATA_FILES', DATA_FILES
 OPTIONS = { 'argv_emulation': False,
             'packages': PACKAGES,
             'includes': MODULES,

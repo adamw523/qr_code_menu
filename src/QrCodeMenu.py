@@ -90,6 +90,13 @@ class ButtonHandler(NSObject):
 class QrCodeMenuApp(NSObject):
     @objc.IBAction
     def about_(self, sender):
+
+        print 'mainbundle', NSBundle.mainBundle()
+
+        self.vc = NSWindowController.alloc().initWithWindowNibName_("nibs/About")
+        print 'vc', self.vc
+        self.vc.showWindow_(self.vc)
+
         print "About stuff", sender
 
         graphicsRect = NSMakeRect(300.0, 550.0, 300.0, 457.0)
