@@ -1,101 +1,25 @@
-import objc
-import Cocoa
-import qrcode
-import qrcode.image.pure
-import random
-import StringIO
-
 from AppKit import *
 from Foundation import *
-from multiprocessing import Process
-from PyObjCTools import AppHelper
 
-class QrCodeMenu(NSMenu):
-    def draw(self, delegate):        
-        # About
-        aboutItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('About QR Code Menu', 'about:', '')
-        self.addItem_(aboutItem)
-
-        self.addItem_(NSMenuItem.separatorItem())  
-
-        # QR Code Image
-        self.qrCodeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('', '', '')
-        self.setLoading()
-        self.addItem_(self.qrCodeItem)
-        self.addItem_(NSMenuItem.separatorItem())  
-
-        # Customize
-        customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'change:', '')
-        self.addItem_(customizeItem)
-
-        # Save Image
-        saveItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Save Image...', 'saveImage:', '')
-        self.addItem_(saveItem)
-
-        self.addItem_(NSMenuItem.separatorItem())
-
-        # Quit
-        quitItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Quit QR Code Menu', 'terminate:', '')
-        self.addItem_(quitItem)
-
-        # track menu activation
-        nc = NSNotificationCenter.defaultCenter()
-        nc.addObserver_selector_name_object_(delegate, 'menuActivated:', NSMenuDidBeginTrackingNotification, self)
-
-    def setQrImage(self, image):
-        self.qrCodeItem.setImage_(image)
-        self.qrCodeItem.setTitle_("")
-
-    def setLoading(self):
-        self.qrCodeItem.setTitle_("Loading...")
-        
-
-class QrCodeMaker():
-    def imageFromText(self, text):
-        # create the image
-        qr = qrcode.QRCode(image_factory=qrcode.image.pure.PymagingImage, 
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=4,
-            border=0)
-        qr.add_data(text)
-        qr.make(fit=True)
-        img = qr.make_image()
-
-        # output Stream
-        output = StringIO.StringIO()
-        img.save_stream(output)
-        image = NSImage.alloc().initWithData_(NSData.dataWithData_(buffer(output.getvalue())))
-        output.close()
-
-        return image
-
-
-# Handle window events
-class WindowDelegate(NSObject):
-    def windowWillClose_(self, notification):
-        print "Bye, now"
-        app.terminate_(self)
-
-# Handle events from our button
-class ButtonHandler(NSObject):
-    # rest could contain event info, but is empty here
-    def doSomething(self, notification):
-        global button
-        print 'Button Pressed!'
-        # Toggle button's border on and off
-        button.setBordered_(not button.isBordered())
-
+from qr_code_menu import *
+from qr_code_maker import *
 
 class QrCodeMenuApp(NSObject):
     @objc.IBAction
     def about_(self, sender):
+        self.icon_128 = NSImage.alloc().initByReferencingFile_('images/icon_128.png')
+
 
         print 'mainbundle', NSBundle.mainBundle()
 
         self.vc = NSWindowController.alloc().initWithWindowNibName_("nibs/About")
         print 'vc', self.vc
         self.vc.showWindow_(self.vc)
+
+    
+        NSApp.activateIgnoringOtherApps_(True)
+
+        return
 
         print "About stuff", sender
 
@@ -133,27 +57,6 @@ class QrCodeMenuApp(NSObject):
         self.aboutWindow.makeKeyAndOrderFront_(self.aboutWindow)
         NSApp.activateIgnoringOtherApps_(True)
         #myWindow.orderFrontRegardless()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @objc.IBAction
@@ -214,9 +117,3 @@ class QrCodeMenuApp(NSObject):
     def applicationWillTerminate_(self, aNotification):
         pass
 
-
-if __name__ == "__main__":
-    app = NSApplication.sharedApplication()
-    delegate = QrCodeMenuApp.alloc().init()
-    app.setDelegate_(delegate)
-    AppHelper.runEventLoop()
