@@ -21,7 +21,7 @@ class QrCodeMenu(NSMenu):
         self.addItem_(NSMenuItem.separatorItem())  
 
         # Customize
-        customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'change:', '')
+        customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'changeValue:', '')
         self.addItem_(customizeItem)
 
         # Save Image

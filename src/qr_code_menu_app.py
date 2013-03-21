@@ -1,62 +1,33 @@
 from AppKit import *
 from Foundation import *
 
+from about_controller import *
 from qr_code_menu import *
 from qr_code_maker import *
 
 class QrCodeMenuApp(NSObject):
+    def init(self):
+        self.aboutController = None
+        return self
+
     @objc.IBAction
     def about_(self, sender):
-        self.icon_128 = NSImage.alloc().initByReferencingFile_('images/icon_128.png')
-
-
-        print 'mainbundle', NSBundle.mainBundle()
-
-        self.vc = NSWindowController.alloc().initWithWindowNibName_("nibs/About")
-        print 'vc', self.vc
-        self.vc.showWindow_(self.vc)
-
-    
-        NSApp.activateIgnoringOtherApps_(True)
-
-        return
-
-        print "About stuff", sender
-
-        graphicsRect = NSMakeRect(300.0, 550.0, 300.0, 457.0)
-        #Make window
-        self.aboutWindow = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
-            graphicsRect,
-            NSTitledWindowMask |
-            NSClosableWindowMask |
-            NSResizableWindowMask,
-            NSBackingStoreBuffered, False)
+        if not self.aboutController:
+            self.aboutController = AboutController()
+            print 'vc', self.aboutController, 'owner', self.aboutController.owner(), 'window', self.aboutController.window()
         
-        self.aboutWindow.center()
+            # we want to get windows actions / menu selections
+            self.aboutController.window().setDelegate_(self)
+            self.aboutController.showWindow_(self.aboutController)
+            NSApp.activateIgnoringOtherApps_(True)
 
-        # Set handler for window
-        self.aboutWindow.setTitle_("About QR Code Menu")
-        #myDelegate = WindowDelegate.alloc( ).init( )
-        #myWindow.setDelegate_(myDelegate)
+    def validateUserInterfaceItem_(self, item):
+        # keep menu items enabled even when windows are in focus
+        return True
 
-        # Create button, and add to window
-        #button = NSButton.alloc().init()
-        #myWindow.contentView().addSubview_(button)
-        #button.setFrame_(NSMakeRect(10.0, 35.0, 45.0, 40.0))
-
-        # Set handler for button; note that the function is called by string name
-        #buttonHandler = ButtonHandler.alloc().init()
-        #button.setTarget_(buttonHandler)
-        #button.setAction_("doSomething")
-
-        # Zoom button
-        self.aboutWindow.standardWindowButton_(NSWindowZoomButton).setHidden_(True)
-        # Display window
-        self.aboutWindow.display()
-        # window.(makeKeyAndOrderFront(myWindow))
-        self.aboutWindow.makeKeyAndOrderFront_(self.aboutWindow)
-        NSApp.activateIgnoringOtherApps_(True)
-        #myWindow.orderFrontRegardless()
+    @objc.IBAction
+    def changeValue_(self, sender):
+        print self.aboutController
 
 
     @objc.IBAction
