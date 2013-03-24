@@ -14,12 +14,10 @@ class QrCodeMenuApp(NSObject):
     def about_(self, sender):
         if not self.aboutController:
             self.aboutController = AboutController()
-            print 'vc', self.aboutController, 'owner', self.aboutController.owner(), 'window', self.aboutController.window()
         
-            # we want to get windows actions / menu selections
-            self.aboutController.window().setDelegate_(self)
-            self.aboutController.showWindow_(self.aboutController)
-            NSApp.activateIgnoringOtherApps_(True)
+        # show window and bring it to front
+        self.aboutController.showWindow_(self.aboutController)
+        NSApp.activateIgnoringOtherApps_(True)
 
     def validateUserInterfaceItem_(self, item):
         # keep menu items enabled even when windows are in focus
@@ -47,10 +45,9 @@ class QrCodeMenuApp(NSObject):
 
             maker = QrCodeMaker()
             i = maker.imageFromText(repr(self.pbstring.encode("utf-8")))
+
             self.menu.setQrImage(i)
             # print u"New pastboard string: %s".encode("utf-8") % repr(self.pbstring)
-
-        pass
 
     def applicationDidFinishLaunching_(self, notification):
         # init clipboard
@@ -76,7 +73,6 @@ class QrCodeMenuApp(NSObject):
 
         self.statusItem.setMenu_(self.menu)
 
-        
         timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
             1,
             self,

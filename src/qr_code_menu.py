@@ -7,25 +7,29 @@ from Foundation import *
 #import QrCodeMenuApp
 from qr_code_menu import *
 class QrCodeMenu(NSMenu):
-    def draw(self, delegate):        
+    def draw(self, delegate):
         # About
         aboutItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('About QR Code Menu', 'about:', '')
+        aboutItem.setTarget_(delegate)
         self.addItem_(aboutItem)
 
         self.addItem_(NSMenuItem.separatorItem())  
 
         # QR Code Image
         self.qrCodeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('', '', '')
+        self.qrCodeItem.setTarget_(delegate)
         self.setLoading()
         self.addItem_(self.qrCodeItem)
         self.addItem_(NSMenuItem.separatorItem())  
 
         # Customize
         customizeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents...', 'changeValue:', '')
+        customizeItem.setTarget_(delegate)
         self.addItem_(customizeItem)
 
         # Save Image
         saveItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Save Image...', 'saveImage:', '')
+        saveItem.setTarget_(delegate)
         self.addItem_(saveItem)
 
         self.addItem_(NSMenuItem.separatorItem())
