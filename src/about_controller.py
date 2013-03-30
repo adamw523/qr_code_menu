@@ -33,3 +33,4 @@ class AboutController(NSWindowController):
 
     	# Set text
     	self.aboutTextField.setStringValue_(ABOUT_TEXT)
+

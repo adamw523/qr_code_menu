@@ -6,6 +6,7 @@ from Foundation import *
 #import QrCodeMaker
 #import QrCodeMenuApp
 from qr_code_menu import *
+
 class QrCodeMenu(NSMenu):
     def draw(self, delegate):
         # About
@@ -13,7 +14,7 @@ class QrCodeMenu(NSMenu):
         aboutItem.setTarget_(delegate)
         self.addItem_(aboutItem)
 
-        self.addItem_(NSMenuItem.separatorItem())  
+        self.addItem_(NSMenuItem.separatorItem())
 
         # Contents
         contentsItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Contents', '', '')
@@ -21,16 +22,23 @@ class QrCodeMenu(NSMenu):
         self.addItem_(contentsItem)
 
         contentsSubmenu = NSMenu.alloc().init()
-        self.contentsTextItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('...', '', '')
-        contentsSubmenu.addItem_(self.contentsTextItem)
 
+        # Contents - change
         contentsChangeItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Change...', 'changeValue:', '')
         contentsChangeItem.setTarget_(delegate)
         contentsSubmenu.addItem_(contentsChangeItem)
         
+        # Contents - clear
         contentsClearItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Clear Clipboard', 'clearPasteboard:', '')
         contentsClearItem.setTarget_(delegate)
         contentsSubmenu.addItem_(contentsClearItem)
+
+        contentsSubmenu.addItem_(NSMenuItem.separatorItem())
+
+        # Contents - contents
+        
+        self.contentsTextItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('...', '', '')
+        contentsSubmenu.addItem_(self.contentsTextItem)
 
         contentsItem.setSubmenu_(contentsSubmenu)
 

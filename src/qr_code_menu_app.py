@@ -14,11 +14,8 @@ class QrCodeMenuApp(NSObject):
 
     @objc.IBAction
     def about_(self, sender):
-        print "self.aboutController", self.aboutController
         if not self.aboutController:
             self.aboutController = AboutController()
-        else:
-            print self.aboutController, self.aboutController.window
         
         self.aboutController.showWindow()        
 
@@ -28,18 +25,13 @@ class QrCodeMenuApp(NSObject):
 
     @objc.IBAction
     def changeValue_(self, sender):
-        if not self.changeController:
-            self.changeController = ChangeController()
-        else:
-            print 'changeController', self.changeController
+        currentPasteBaord = self.pb.stringForType_(NSStringPboardType)
         
-        # show window and bring it to front
-        self.changeController.showWindow_(self.changeController)
-        NSApp.activateIgnoringOtherApps_(True)
+        if not self.changeController:
+            self.changeController = ChangeController(currentPasteBaord)
 
-    def windowDidClose_(self, notification):
-        print "QrCodeMenuApp windowWillClose_"
-        self.autorelease()
+        self.changeController.setText(currentPasteBaord)
+        self.changeController.showWindow()
 
     @objc.IBAction
     def clearPasteboard_(self, sender):
@@ -66,14 +58,20 @@ class QrCodeMenuApp(NSObject):
                 self.menu.setEmpty()
                 self.menu.setContentsText("Clipboard is Empty")
             else:
+                # update image
                 maker = QrCodeMaker()
                 i = maker.imageFromText(repr(self.pbstring.encode("utf-8")))
 
                 self.menu.setQrImage(i)
+
+                # update menu text
                 menuText = self.pbstring[:20]
                 if len(self.pbstring) > 20: menuText += "..."
                 self.menu.setContentsText(menuText)
-                # print u"New pastboard string: %s".encode("utf-8") % repr(self.pbstring)
+
+                # update change controller if exists
+                if self.changeController:
+                    self.changeController.setText(self.pbstring)
 
     def applicationDidFinishLaunching_(self, notification):
         # init clipboard
